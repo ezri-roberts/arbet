@@ -13,6 +13,9 @@ latest
 today
     Get all tasks recorded today.
 
+date [y-d-m]
+    Get all tasks recorded on a certain date.
+
 help
     Displays this help message.
 """
@@ -22,6 +25,7 @@ def dispatch(cursor, args):
     match args[1]:
         case "task":
 
+            # Check if a task name was provided.
             if len(args) >= 3:
                 task(cursor, args[2])
             else:
@@ -33,6 +37,9 @@ def dispatch(cursor, args):
         case "today":
             today(cursor)
 
+        case "date":
+            date(cursor, args[2])
+
         case "help":
             help()
 
@@ -41,6 +48,7 @@ def help():
     print(help_msg)
 
 
+# Record a new task.
 def task(cursor, name):
 
     duration = misc.elapsed_time()
@@ -48,14 +56,19 @@ def task(cursor, name):
     database.add_record(name, duration, cursor)
 
 
+# Get the latest recorded task.
 def latest(cursor):
     cursor.execute("SELECT * FROM tasks ORDER BY id DESC LIMIT 1")
 
     latest = cursor.fetchone()
-    print(
-        f"Latest Task: {latest[1]}, {latest[2]}, {misc.timestamp(latest[3])}")
+    if (latest is None):
+        print("No task found.")
+    else:
+        timestamp = misc.timestamp(latest[3])
+        print(f"ID {latest[0]}: {latest[1]}, {latest[2]}, {timestamp}")
 
 
+# Get all tasks recorded today.
 def today(cursor):
     cursor.execute("""
         SELECT * FROM tasks
@@ -64,5 +77,20 @@ def today(cursor):
 
     entries = cursor.fetchall()
     for entry in entries:
-        print(
-            f"{entry[0]}: {entry[1]}, {entry[2]}, {misc.timestamp(entry[3])}")
+        timestamp = misc.timestamp(entry[3])
+        print(f"ID {entry[0]}: {entry[1]}, {entry[2]}, {timestamp}")
+
+    if (len(entries) == 0):
+        print("No tasks found.")
+
+
+def date(cursor, date):
+    cursor.execute(f"SELECT * FROM tasks WHERE DATE(date) = '{date}'")
+    entries = cursor.fetchall()
+
+    for entry in entries:
+        timestamp = misc.timestamp(entry[3])
+        print(f"ID {entry[0]}: {entry[1]}, {entry[2]}, {timestamp}")
+
+    if (len(entries) == 0):
+        print("No tasks found.")

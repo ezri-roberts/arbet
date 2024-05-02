@@ -7,9 +7,11 @@ def main():
 
     try:
 
+        # Connect to database.
         db = sqlite3.connect("arbet.db")
         cursor = db.cursor()
 
+        # Create tasks table if it does not exist.
         cursor.execute("""CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
@@ -17,6 +19,7 @@ def main():
             duration REAL NOT NULL
         );""")
 
+        # Dispatch command if one was provided.
         if len(sys.argv) > 1:
             commands.dispatch(cursor, sys.argv)
         else:
@@ -32,7 +35,6 @@ def main():
         if (db):
             db.commit()
             db.close()
-            print("Connection closed.")
 
 
 if __name__ == "__main__":

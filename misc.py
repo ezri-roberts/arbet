@@ -1,18 +1,22 @@
-import time, sys, math
+import time
+import sys
+import math
+
 
 def elapsed_time():
 
-  cmd = ""
-  start = time.time()
-  last = start
-  toal = 0
+    cmd = ""
+    start = time.time()
+    last = start
+    toal = 0
 
-  while(cmd.lower() != 'q'):
+    while (cmd.lower() != 'q'):
 
-    cmd = input("Timing task. Enter 'q' to stop: ")
-    total = round((time.time() - start), 2)
+        cmd = input("Timing task. Enter 'q' to stop: ")
+        total = round((time.time() - start), 2)
 
-  return total
+    return total
+
 
 def timestamp(seconds):
     hours = math.floor(seconds // 3600)

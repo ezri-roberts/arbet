@@ -1,4 +1,10 @@
-import sqlite3, time, sys, signal
+import sqlite3, time, sys, signal, math
+
+def timestamp(seconds):
+    hours = math.floor(seconds // 3600)
+    minutes = math.floor((seconds % 3600) // 60)
+    seconds = math.floor(seconds % 60)
+    return f"{hours}:{minutes}:{seconds}"
 
 def task_time():
 
@@ -14,18 +20,35 @@ def task_time():
 
   return total
 
-def add_record(name, time, cursor):
-  sql = f"INSERT INTO tasks (name, date, time) VALUES ('{name}', DATE('now'), '{time}')"
+def add_record(name, duration, cursor):
+  sql = f"INSERT INTO tasks (name, date, duration) VALUES ('{name}', DATE('now'), '{duration}')"
   cursor.execute(sql)
 
 def main():
 
+  task_name = ""
+
+  if len(sys.argv) > 1:
+    task_name = sys.argv[1]
+  else:
+    print("Error: You need to enter a name for the task.")
+    exit(1)
+
   try:
+
     db = sqlite3.connect("arbet.db")
     cursor = db.cursor()
 
-    time = task_time()
-    add_record("Task1", time, cursor)
+    cursor.execute("""CREATE TABLE IF NOT EXISTS tasks (
+      id INTEGER PRIMARY KEY,
+      name TEXT NOT NULL,
+      date DATE NOT NULL,
+      duration REAL NOT NULL
+    );""")
+
+    duration = task_time()
+    print("Total tast time: ", timestamp(duration))
+    add_record(task_name, duration, cursor)
 
     cursor.close()
 

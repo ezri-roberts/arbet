@@ -1,11 +1,11 @@
-import database
 import misc
 
 help_msg = """
 You must provide a command.
 
-task [name]
+task [name] [category]
     Record the duration of a task.
+    Category is optional.
 
 latest
     Get the latest recorded task.
@@ -27,7 +27,7 @@ def dispatch(cursor, args):
 
             # Check if a task name was provided.
             if len(args) >= 3:
-                task(cursor, args[2])
+                task(cursor, args)
             else:
                 print("Error: The task must be given a name.")
 
@@ -49,11 +49,27 @@ def help():
 
 
 # Record a new task.
-def task(cursor, name):
+def task(cursor, args):
 
     duration = misc.elapsed_time()
     print("Total tast time: ", misc.timestamp(duration))
-    database.add_record(name, duration, cursor)
+
+    cursor.execute(f"""
+        INSERT INTO tasks (name, date, duration)
+        VALUES ('{args[2]}', DATE('now'), '{duration}')
+    """)
+
+    task_id = cursor.lastrowid
+
+    if (len(args) >= 4):
+        cursor.execute(f"""CREATE TABLE IF NOT EXISTS category_{args[3]} (
+            task_id INTEGER,
+            FOREIGN KEY (task_id) REFERENCES tasks(id)
+        );""")
+        cursor.execute(f"""
+            INSERT INTO category_{args[3]} (task_id)
+            VALUES ({task_id})
+        """)
 
 
 # Get the latest recorded task.

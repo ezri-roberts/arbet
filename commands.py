@@ -19,6 +19,9 @@ today
 date [y-d-m]
     Get all tasks recorded on a certain date.
 
+older [y-d-m]
+    Get all tasks recorded before a certain date.
+
 help
     Displays this help message.
 """
@@ -34,6 +37,8 @@ def dispatch(cursor, args):
             today(cursor)
         case "date":
             date(cursor, args[2])
+        case "older":
+            older(cursor, args[2])
         case "category":
             category(cursor, args)
         case "help":
@@ -115,6 +120,18 @@ def today(cursor):
 
 def date(cursor, date):
     cursor.execute(f"SELECT * FROM tasks WHERE DATE(date) = '{date}'")
+    entries = cursor.fetchall()
+
+    for entry in entries:
+        timestamp = misc.timestamp(entry[3])
+        print(f"ID {entry[0]}: {entry[1]}, {entry[2]}, {timestamp}")
+
+    if (len(entries) == 0):
+        print("No tasks found.")
+
+
+def older(cursor, date):
+    cursor.execute(f"SELECT * FROM tasks WHERE date < '{date}'")
     entries = cursor.fetchall()
 
     for entry in entries:

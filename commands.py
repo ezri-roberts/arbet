@@ -10,6 +10,9 @@ task [name] [category]
 latest
     Get the latest recorded task.
 
+category [name]
+    Get all tasks from a certain category.
+
 today
     Get all tasks recorded today.
 
@@ -24,22 +27,15 @@ help
 def dispatch(cursor, args):
     match args[1]:
         case "task":
-
-            # Check if a task name was provided.
-            if len(args) >= 3:
-                task(cursor, args)
-            else:
-                print("Error: The task must be given a name.")
-
+            task(cursor, args)
         case "latest":
             latest(cursor)
-
         case "today":
             today(cursor)
-
         case "date":
             date(cursor, args[2])
-
+        case "category":
+            category(cursor, args)
         case "help":
             help()
 
@@ -50,6 +46,11 @@ def help():
 
 # Record a new task.
 def task(cursor, args):
+
+    # Check if a task name was provided.
+    if len(args) < 3:
+        print("Error: The task must be given a name.")
+        return
 
     duration = misc.elapsed_time()
     print("Total tast time: ", misc.timestamp(duration))
@@ -70,6 +71,18 @@ def task(cursor, args):
             INSERT INTO category_{args[3]} (task_id)
             VALUES ({task_id})
         """)
+
+
+def category(cursor, args):
+    cursor.execute(f"SELECT * FROM category_{category}")
+
+    entries = cursor.fetchall()
+    for entry in entries:
+        timestamp = misc.timestamp(entry[3])
+        print(f"ID {entry[0]}: {entry[1]}, {entry[2]}, {timestamp}")
+
+    if (len(entries) == 0):
+        print("No tasks found.")
 
 
 # Get the latest recorded task.

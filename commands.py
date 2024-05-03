@@ -7,6 +7,9 @@ task [name] [category]
     Record the duration of a task.
     Category is optional.
 
+name [name]
+    Get all tasks with a certain name.
+
 latest
     Get the latest recorded task.
 
@@ -37,6 +40,8 @@ def dispatch(cursor, args):
     match args[1]:
         case "task":
             task(cursor, args)
+        case "name":
+            name(cursor, args[2])
         case "latest":
             latest(cursor)
         case "fastest":
@@ -86,6 +91,18 @@ def task(cursor, args):
             INSERT INTO category_{args[3]} (task_id)
             VALUES ({task_id})
         """)
+
+
+def name(cursor, name):
+    cursor.execute(f"SELECT * FROM tasks WHERE name = '{name}'")
+    entries = cursor.fetchall()
+
+    for entry in entries:
+        timestamp = misc.timestamp(entry[3])
+        print(f"ID {entry[0]}: {entry[1]}, {entry[2]}, {timestamp}")
+
+    if (len(entries) == 0):
+        print("No tasks found.")
 
 
 def category(cursor, args):

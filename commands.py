@@ -10,6 +10,9 @@ task [name] [category]
 latest
     Get the latest recorded task.
 
+fastest [name]
+    Get the fastest recorded task with a certain name.
+
 category [name]
     Get all tasks from a certain category.
 
@@ -22,6 +25,9 @@ date [y-d-m]
 older [y-d-m]
     Get all tasks recorded before a certain date.
 
+newer [y-d-m]
+    Get all tasks recorded after a certain date.
+
 help
     Displays this help message.
 """
@@ -33,12 +39,16 @@ def dispatch(cursor, args):
             task(cursor, args)
         case "latest":
             latest(cursor)
+        case "fastest":
+            fastest(cursor, args[2])
         case "today":
             today(cursor)
         case "date":
             date(cursor, args[2])
         case "older":
             older(cursor, args[2])
+        case "newer":
+            newer(cursor, args[2])
         case "category":
             category(cursor, args)
         case "help":
@@ -140,3 +150,32 @@ def older(cursor, date):
 
     if (len(entries) == 0):
         print("No tasks found.")
+
+
+def newer(cursor, date):
+    cursor.execute(f"SELECT * FROM tasks WHERE date > '{date}'")
+    entries = cursor.fetchall()
+
+    for entry in entries:
+        timestamp = misc.timestamp(entry[3])
+        print(f"ID {entry[0]}: {entry[1]}, {entry[2]}, {timestamp}")
+
+    if (len(entries) == 0):
+        print("No tasks found.")
+
+
+def fastest(cursor, name):
+    cursor.execute(f"""
+        SELECT * FROM tasks
+        WHERE name = '{name}'
+        GROUP BY id, name, date, duration
+        ORDER BY duration ASC
+        LIMIT 1;
+    """)
+    latest = cursor.fetchone()
+
+    if (latest is None):
+        print("No task found.")
+    else:
+        timestamp = misc.timestamp(latest[3])
+        print(f"ID {latest[0]}: {latest[1]}, {latest[2]}, {timestamp}")
